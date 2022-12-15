@@ -7,9 +7,9 @@ const PG_USER = process.env.PG_USER
 const PG_PASS = null
 
 module.exports = {
-    PORT,
-    PG_DB,
-    PG_HOST,
-    PG_USER,
-    PG_PASS
+  PORT,
+  PG_DB,
+  PG_HOST,
+  PG_USER,
+  PG_PASS
 }

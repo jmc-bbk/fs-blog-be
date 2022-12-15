@@ -8,7 +8,7 @@
     "dev": "nodemon index.js",
     "test": "jest --verbose",
     "lint": "eslint .",
-    "fix-lint": "eslint . --fix",
+    "fix-lint": "eslint . --fix"
   },
   "author": "James McNeilis",
   "license": "MIT",
