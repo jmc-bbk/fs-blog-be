@@ -83,30 +83,30 @@ describe('total likes', () => {
 })
 
 describe('favourite blog', () => {
-    test('when list no blogs return null', () => {
-      const result = listHelper.favouriteBlog(listWithNoBlogs)
-      expect(result).toBe(null)
-    })
-  
-    test('when list has only one blog, returns that blog', () => {
-      const result = listHelper.favouriteBlog(listWithOneBlogs)
-      expect(result).toEqual({
-        id: 1,
-        title: 'Go To Statement Considered Harmful',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-        likes: 5
-      })
-    })
-  
-    test('when list has many blogs, returns blog with most likes', () => {
-      const result = listHelper.favouriteBlog(listWithManyBlogs)
-      expect(result).toEqual({
-        id: 3,
-        title: 'Canonical string reduction',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-        likes: 12
-      })
+  test('when list no blogs return null', () => {
+    const result = listHelper.favouriteBlog(listWithNoBlogs)
+    expect(result).toBe(null)
+  })
+
+  test('when list has only one blog, returns that blog', () => {
+    const result = listHelper.favouriteBlog(listWithOneBlogs)
+    expect(result).toEqual({
+      id: 1,
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 5
     })
   })
+
+  test('when list has many blogs, returns blog with most likes', () => {
+    const result = listHelper.favouriteBlog(listWithManyBlogs)
+    expect(result).toEqual({
+      id: 3,
+      title: 'Canonical string reduction',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+      likes: 12
+    })
+  })
+})

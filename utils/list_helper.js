@@ -11,10 +11,10 @@ const totalLikes = blogs => {
 }
 
 const favouriteBlog = blogs => {
-    if (blogs.length === 0) {
-        return null
-    }
-    return blogs.sort((a, b) => b.likes - a.likes)[0]
+  if (blogs.length === 0) {
+    return null
+  }
+  return blogs.sort((a, b) => b.likes - a.likes)[0]
 }
 
 module.exports = {

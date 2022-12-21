@@ -10,10 +10,9 @@ blogsRouter.get('/', async (req, res) => {
 blogsRouter.post('/', async (req, res) => {
   try {
     const blog = await Blog.create(req.body)
-    return res.json(blog)
-  }
-  catch (error) {
-    return res.status(400).json({error})
+    res.status(201).json(blog)
+  } catch {
+    throw Error('BadRequest')
   }
 })
 
