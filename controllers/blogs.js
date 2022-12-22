@@ -28,4 +28,36 @@ blogsRouter.get('/:id', async (req, res) => {
   }
 })
 
+// 4.13 update likes
+// TODO allow update of all valid vars in req.body
+blogsRouter.put('/:id', async (req, res) => {
+  const blog = await Blog.findByPk(req.params.id)
+
+  if (!req.body.likes) {
+    return res.status(400).end()
+  }
+
+  if (!blog) {
+    return res.status(404).end()
+  }
+
+  blog.set({
+    likes: req.body.likes
+  })
+  await blog.save()
+  res.status(204).end()
+})
+
+blogsRouter.delete('/:id', async (req, res) => {
+  const blog = await Blog.findByPk(req.params.id)
+
+  if (blog) {
+    await blog.destroy()
+    res.status(204).end()
+  }
+  else {
+    res.status(404).end()
+  }
+})
+
 module.exports = blogsRouter
