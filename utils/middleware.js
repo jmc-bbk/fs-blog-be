@@ -12,17 +12,28 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
-// TODO: clean this up
-// works with express-async-errors but gives poor error message
-const errorHandler = (err, req, res, next) => {
-  logger.error(err)
+const errorHandler = (error, request, response, next) => {
+  logger.error(error)
 
-  if (err.message === 'BadRequest') {
-    res.status(400)
-    res.json({error: err.message})
+  if (error.name === 'JsonWebTokenError') {
+    return response.status(401).json({
+      error: 'invalid token'
+    })
+  } else if (error.name === 'SequelizeUniqueConstraintError') {
+    return response.status(400).send({
+      error: error.message
+    })
+  } else if (error.name === 'TokenExpiredError') {
+    return response.status(401).json({
+      error: 'token expired'
+    })
+  } else if (error.message === 'BadRequest') {
+    return response.status(400).json({
+      error: 'bad request'
+    })
   }
 
-  next(err)
+  next(error)
 }
 
 module.exports = {

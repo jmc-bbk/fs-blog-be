@@ -1,38 +1,41 @@
 const sequelize = require('../database')
 const {Model, DataTypes} = require('sequelize')
+const Blog = require('./blog')
 
-class Blog extends Model {}
+class User extends Model {}
 
-Blog.init({
+User.init({
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  title: {
+  username: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    unique: true
+  },
+  passwordHash: {
     type: DataTypes.TEXT,
     allowNull: false
   },
-  author: {
+  name: {
     type: DataTypes.TEXT,
     allowNull: false
-  },
-  url: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  likes: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0
   },
 }, {
   sequelize,
   underscored: true,
   timestamps: true,
-  modelName: 'blog'
+  modelName: 'user'
 })
 
-// Create table if not exists executed at start of app
-Blog.sync()
+User.hasMany(Blog, {
+  foreignKey: {
+    name: 'user_id',
+    allowNull: false
+  },
+  onDelete: 'CASCADE'
+})
 
-module.exports = Blog
+module.exports = User
