@@ -9,10 +9,13 @@ const PG_HOST = process.env.PG_HOST
 const PG_USER = process.env.PG_USER
 const PG_PASS = null
 
+const SECRET = process.env.SECRET
+
 module.exports = {
   PORT,
   PG_DB,
   PG_HOST,
   PG_USER,
-  PG_PASS
+  PG_PASS,
+  SECRET
 }

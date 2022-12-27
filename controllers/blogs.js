@@ -1,19 +1,39 @@
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 const logger = require('../utils/logger')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
+
+const getTokenFrom = req => {
+  const auth = req.get('authorization')
+  if (auth && auth.toLowerCase().startsWith('bearer ')) {
+    return auth.substring(7)
+  }
+  return null
+}
 
 blogsRouter.get('/', async (req, res) => {
-  const blogs = await Blog.findAll()
+  const blogs = await Blog.findAll({
+    include: User
+  })
   res.json(blogs)
 })
 
 blogsRouter.post('/', async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body)
-    res.status(201).json(blog)
-  } catch {
-    throw Error('BadRequest')
+  const body = req.body
+  const token = getTokenFrom(req)
+  
+  const decodedToken = jwt.verify(token, config.SECRET)
+  if(!decodedToken.id) {
+    return res.status(401).json({
+      error: 'invalid/missing token'
+    })
   }
+  const bodyWithId = {...body, user_id: decodedToken.id}
+  
+  const blog = await Blog.create(bodyWithId)
+  res.status(201).json(blog)
 })
 
 blogsRouter.get('/:id', async (req, res) => {
@@ -58,6 +78,10 @@ blogsRouter.delete('/:id', async (req, res) => {
   else {
     res.status(404).end()
   }
+})
+
+Blog.belongsTo(User, {
+  foreignKey: 'user_id'
 })
 
 module.exports = blogsRouter

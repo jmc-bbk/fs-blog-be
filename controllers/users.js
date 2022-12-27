@@ -1,11 +1,14 @@
 const bcrypt = require('bcrypt')
+const Blog = require('../models/blog')
 const usersRouter = require('express').Router()
 const User = require('../models/user')
 const {isValidUsername, isValidPassword} = require('../utils/user_helper')
 
 // Begin routes
 usersRouter.get('/', async (req, res) => {
-  const users = await User.findAll()
+  const users = await User.findAll({
+    include: Blog
+  })
   res.json(users)
 })
 
