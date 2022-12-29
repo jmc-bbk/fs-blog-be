@@ -1,17 +1,8 @@
 const jwt = require('jsonwebtoken')
 const config = require('../utils/config')
-const logger = require('../utils/logger')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
-
-const getTokenFrom = req => {
-  const auth = req.get('authorization')
-  if (auth && auth.toLowerCase().startsWith('bearer ')) {
-    return auth.substring(7)
-  }
-  return null
-}
 
 blogsRouter.get('/', async (req, res) => {
   const blogs = await Blog.findAll({
@@ -21,17 +12,23 @@ blogsRouter.get('/', async (req, res) => {
 })
 
 blogsRouter.post('/', async (req, res) => {
-  const body = req.body
-  const token = getTokenFrom(req)
-  
+  const {body, token} = req
   const decodedToken = jwt.verify(token, config.SECRET)
+
   if(!decodedToken.id) {
     return res.status(401).json({
       error: 'invalid/missing token'
     })
   }
+
+  if(!body.title) {
+    return res.status(400).json({
+      error: 'Bad Request: Missing title from blog.'
+    })
+  }
+
   const bodyWithId = {...body, user_id: decodedToken.id}
-  
+
   const blog = await Blog.create(bodyWithId)
   res.status(201).json(blog)
 })
@@ -40,7 +37,6 @@ blogsRouter.get('/:id', async (req, res) => {
   const blog = await Blog.findByPk(req.params.id)
 
   if (blog) {
-    logger.info(blog.toJSON())
     res.json(blog)
   }
   else {
@@ -70,14 +66,21 @@ blogsRouter.put('/:id', async (req, res) => {
 
 blogsRouter.delete('/:id', async (req, res) => {
   const blog = await Blog.findByPk(req.params.id)
+  const decodedToken = jwt.verify(req.token, config.SECRET)
 
-  if (blog) {
-    await blog.destroy()
-    res.status(204).end()
+  if(!blog) {
+    return res.status(404).end()
   }
-  else {
-    res.status(404).end()
+
+  // Note. Middleware handles NULL token error.
+  if(decodedToken.id !== blog.user_id) {
+    return res.status(400).json({
+      error: 'Bad Request: User does not have permission to delete blog.'
+    })
   }
+
+  await blog.destroy()
+  res.status(204).end()
 })
 
 Blog.belongsTo(User, {

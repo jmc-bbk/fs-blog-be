@@ -4,7 +4,8 @@ const {Sequelize} = require('sequelize')
 const sequelize = new Sequelize(config.PG_DB, config.PG_USER, null, {
   host: config.PG_HOST,
   dialect: 'postgres',
-  logging: console.log
+  logging: false
+  // logging: console.log
 })
 
 // Authenticate connection
@@ -12,6 +13,8 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('Connection has been established.')
+    // Emit a ready event to signal the connection has been established
+    sequelize.emit('ready')
   })
   .catch(err => {
     console.error('Unable to connect to the database', err)

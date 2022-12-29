@@ -8,27 +8,32 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
+// Extract token sent from client in auth headers
+const tokenExtractor = (request, response, next) => {
+  const auth = request.get('authorization')
+  if (auth && auth.toLowerCase().startsWith('bearer ')) {
+    request.token = auth.substring(7)
+  }
+  next()
 }
 
 const errorHandler = (error, request, response, next) => {
   logger.error(error)
 
   if (error.name === 'JsonWebTokenError') {
-    return response.status(401).json({
+    response.status(401).json({
       error: 'invalid token'
     })
   } else if (error.name === 'SequelizeUniqueConstraintError') {
-    return response.status(400).send({
+    response.status(400).send({
       error: error.message
     })
   } else if (error.name === 'TokenExpiredError') {
-    return response.status(401).json({
+    response.status(401).json({
       error: 'token expired'
     })
   } else if (error.message === 'BadRequest') {
-    return response.status(400).json({
+    response.status(400).json({
       error: 'bad request'
     })
   }
@@ -36,8 +41,13 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({error: 'unknown endpoint'})
+}
+
 module.exports = {
   requestLogger,
-  unknownEndpoint,
-  errorHandler
+  tokenExtractor,
+  errorHandler,
+  unknownEndpoint
 }

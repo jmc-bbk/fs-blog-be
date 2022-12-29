@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 const sequelize = require('../database')
 const supertest = require('supertest')
 const app = require('../app')
@@ -24,19 +25,24 @@ const initialBlogs = [
   }
 ]
 
+beforeAll(async () => {
+  await sequelize.authenticate()
+})
+
 beforeEach(async () => {
   await User.sync({force:true})
   await Blog.sync({force:true})
 
+  const passwordHash = await bcrypt.hash('foobar', 10)
   await User.create({
     username: 'Mike',
     name: 'Michael Chan',
-    passwordHash: 'foobar',
+    passwordHash: passwordHash
   })
   await User.create({
     username: 'Edsger',
     name: 'Edsger W. Dijkstra',
-    passwordHash: 'barfoo',
+    passwordHash: passwordHash
   })
 
   await Blog.create(initialBlogs[0])
@@ -69,8 +75,17 @@ describe('POST blog to /api/blogs', () => {
       user_id: 2
     }
 
+    const loginResponse = await api
+      .post('/api/login/')
+      .send({
+        username: 'Edsger',
+        password: 'foobar'
+      })
+      .expect(200)
+
     await api
       .post('/api/blogs/')
+      .set('Authorization', `bearer ${loginResponse.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -82,6 +97,21 @@ describe('POST blog to /api/blogs', () => {
     expect(contents).toContain(newBlog.content)
   })
 
+  test('a blog with invalid token returns 401', async() => {
+    const newBlog = {
+      title: 'Canonical string reduction',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+      likes: 12,
+      user_id: 2
+    }
+
+    await api
+      .post('/api/blogs/')
+      .send(newBlog)
+      .expect(401)
+  })
+
   test('a blog with no likes defaults to zero', async() => {
     const newBlog = {
       title: 'Canonical string reduction',
@@ -90,8 +120,17 @@ describe('POST blog to /api/blogs', () => {
       user_id: 2
     }
 
+    const loginResponse = await api
+      .post('/api/login/')
+      .send({
+        username: 'Edsger',
+        password: 'foobar'
+      })
+      .expect(200)
+
     await api
       .post('/api/blogs/')
+      .set('Authorization', `bearer ${loginResponse.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -106,8 +145,17 @@ describe('POST blog to /api/blogs', () => {
       url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
     }
 
+    const loginResponse = await api
+      .post('/api/login/')
+      .send({
+        username: 'Edsger',
+        password: 'foobar'
+      })
+      .expect(200)
+
     await api
       .post('/api/blogs/')
+      .set('Authorization', `bearer ${loginResponse.body.token}`)
       .send(newBlog)
       .expect(400)
   })
@@ -118,8 +166,17 @@ describe('DELETE blog from /api/blogs/:id', () => {
     const blogsAtStart = await Blog.findAll()
     const blogToDelete = blogsAtStart[0]
 
+    const loginResponse = await api
+      .post('/api/login/')
+      .send({
+        username: 'Mike',
+        password: 'foobar'
+      })
+      .expect(200)
+
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `bearer ${loginResponse.body.token}`)
       .expect(204)
 
     const blogsAtEnd = await Blog.findAll()
@@ -136,8 +193,17 @@ describe('DELETE blog from /api/blogs/:id', () => {
   test('deleting a non-existing blog returns 404', async() => {
     const nonExistingId = 999
 
+    const loginResponse = await api
+      .post('/api/login/')
+      .send({
+        username: 'Mike',
+        password: 'foobar'
+      })
+      .expect(200)
+
     await api
       .delete(`/api/blogs/${nonExistingId}`)
+      .set('Authorization', `bearer ${loginResponse.body.token}`)
       .expect(404)
   })
 })

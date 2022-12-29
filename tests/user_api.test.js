@@ -4,7 +4,12 @@ const app = require('../app')
 const api = supertest(app)
 const User = require('../models/user')
 
+beforeAll(async () => {
+  await sequelize.authenticate()
+})
+
 beforeEach(async () => {
+  await sequelize.authenticate()
   await User.sync({force:true})
 
   await User.create({
