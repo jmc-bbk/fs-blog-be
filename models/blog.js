@@ -32,7 +32,4 @@ Blog.init({
   modelName: 'blog'
 })
 
-// Create table if not exists executed at start of app
-Blog.sync()
-
 module.exports = Blog
