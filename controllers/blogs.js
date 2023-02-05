@@ -29,8 +29,12 @@ blogsRouter.post('/', async (req, res) => {
 
   const bodyWithId = {...body, user_id: decodedToken.id}
 
-  const blog = await Blog.create(bodyWithId)
-  res.status(201).json(blog)
+  // Sequelize does not support eager loading with create.
+  const newBlog = await Blog.create(bodyWithId)
+  const returnBlog = await Blog.findByPk(newBlog.id, {
+    include: User
+  })
+  res.status(201).json(returnBlog)
 })
 
 blogsRouter.get('/:id', async (req, res) => {
@@ -47,7 +51,9 @@ blogsRouter.get('/:id', async (req, res) => {
 // 4.13 update likes
 // TODO allow update of all valid vars in req.body
 blogsRouter.put('/:id', async (req, res) => {
-  const blog = await Blog.findByPk(req.params.id)
+  const blog = await Blog.findByPk(req.params.id, {
+    include: User
+  })
 
   if (!req.body.likes) {
     return res.status(400).end()
@@ -61,11 +67,12 @@ blogsRouter.put('/:id', async (req, res) => {
     likes: req.body.likes
   })
   await blog.save()
-  res.status(204).end()
+  res.json(blog).status(204).end()
 })
 
 blogsRouter.delete('/:id', async (req, res) => {
   const blog = await Blog.findByPk(req.params.id)
+  console.log(req.token)
   const decodedToken = jwt.verify(req.token, config.SECRET)
 
   if(!blog) {

@@ -36,7 +36,8 @@ loginRouter.post('/', async (req, res) => {
     .send({
       token,
       username: user.username,
-      name: user.name
+      name: user.name,
+      id: user.id
     })
 
 })

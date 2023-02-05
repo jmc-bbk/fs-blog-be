@@ -13,8 +13,6 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('Connection has been established.')
-    // Emit a ready event to signal the connection has been established
-    sequelize.emit('ready')
   })
   .catch(err => {
     console.error('Unable to connect to the database', err)
@@ -22,7 +20,7 @@ sequelize
 
 // Create tables
 sequelize
-  .sync({force: false})
+  .sync()
   .then(() => {
     console.log('Successfully created tables.')
   })
